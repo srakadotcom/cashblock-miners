@@ -1,0 +1,68 @@
+
+plugins {
+    id 'java-library'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+
+group 'pl.sexozix'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.spigotmc'
+        }
+    }
+
+    maven {
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+        content {
+            includeGroup 'me.clip'
+        }
+    }
+
+    maven {
+        url 'https://storehouse.okaeri.eu/repository/maven-public/'
+        content {
+            includeGroup 'eu.okaeri'
+        }
+    }
+
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    implementation files("libs/database.jar")
+
+    compileOnly 'me.clip:placeholderapi:2.10.1'
+
+    implementation 'eu.okaeri:okaeri-configs-yaml-bukkit:2.7.32'
+
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.0'
+}
+
+shadowJar {
+    relocate 'pl.memexurer', 'pl.sexozix'
+    exclude "database.properties"
+}
+
+// do testowania: w runnerze intellij dodajesz -DpluginsDir=/home/memexurer/Desktop/spigot/plugins
+// task ma odpalac: shadowJar copyJar
+// wiesz ocb
+task copyJar(type: Copy) {
+    from().from(tasks.shadowJar.archiveFile)
+    into System.properties.getProperty("pluginsDir")
+}
+
+test {
+    useJUnitPlatform()
+}

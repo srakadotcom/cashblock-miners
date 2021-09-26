@@ -1,0 +1,18 @@
+name: CashblockMiners
+version: 1.0
+main: pl.sexozix.cashblockminers.CashBlockPlugin
+api-version: 1.16
+commands:
+  money:
+    aliases: [hajs, pieniadze]
+    description: Pokazuje ile masz hajsu na koncie
+    usage: /money
+  wygrana:
+    aliases: [win]
+    description: SEX
+    usage: /wygrana
+  przegrana:
+    aliases: [lose]
+  tops:
+    aliases: [topki]
+
