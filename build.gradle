@@ -7,6 +7,12 @@ plugins {
 group 'pl.sexozix'
 version '1.0-SNAPSHOT'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(16))
+    }
+}
+
 repositories {
     mavenCentral()
 
