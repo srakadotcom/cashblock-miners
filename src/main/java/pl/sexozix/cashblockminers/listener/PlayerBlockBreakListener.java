@@ -3,11 +3,13 @@ package pl.sexozix.cashblockminers.listener;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 import pl.sexozix.cashblockminers.CashBlockConfiguration;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossbarManager;
@@ -60,7 +62,7 @@ public final class PlayerBlockBreakListener implements Listener {
                 quantity = ThreadLocalRandom.current().nextDouble(1);
         } else {
             for (Reward reward : CashBlockConfiguration.getConfiguration().rewardList)
-                if (RandomUtil.chance(reward.chance())) {
+                if (RandomUtil.chance(reward.chance() * getMultiplier(player))) {
                     quantity = reward.quantity();
                     break;
                 }
@@ -83,5 +85,13 @@ public final class PlayerBlockBreakListener implements Listener {
                     .replace("{MINED-MONEY}", String.valueOf(quantity))));
             bossbarManager.createNotification(player.getName(), quantity);
         }
+    }
+
+    private double getMultiplier(Player player) {
+        ItemStack helmet = player.getInventory().getHelmet();
+        if(helmet == null)
+            return 1.0d;
+
+        return 1.0 + (helmet.getEnchantmentLevel(Enchantment.LUCK) * 0.1);
     }
 }
