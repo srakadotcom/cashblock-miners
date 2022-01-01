@@ -2,12 +2,14 @@ package pl.sexozix.cashblockminers.listener;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import pl.sexozix.cashblockminers.CashBlockConfiguration;
+import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossbarManager;
 import pl.sexozix.cashblockminers.system.data.UserDataModel;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
@@ -15,6 +17,7 @@ import pl.sexozix.cashblockminers.system.reward.Reward;
 import pl.sexozix.cashblockminers.utils.ChatUtil;
 import pl.sexozix.cashblockminers.utils.RandomUtil;
 
+import java.util.OptionalDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class PlayerBlockBreakListener implements Listener {
@@ -22,10 +25,12 @@ public final class PlayerBlockBreakListener implements Listener {
 
     private final UserHandler handler;
     private final BossbarManager bossbarManager;
+    private final BlockRewardManager blockRewardManager;
 
-    public PlayerBlockBreakListener(UserHandler handler, BossbarManager bossbarManager) {
+    public PlayerBlockBreakListener(UserHandler handler, BossbarManager bossbarManager, BlockRewardManager blockRewardManager) {
         this.handler = handler;
         this.bossbarManager = bossbarManager;
+        this.blockRewardManager = blockRewardManager;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -43,6 +48,11 @@ public final class PlayerBlockBreakListener implements Listener {
         double quantity = 0.0d;
 
         double fakeReward = userDataModel.fakeReward();
+
+        OptionalDouble blockReward = blockRewardManager.getReward(event.getBlock().getLocation());
+        if(blockReward.isPresent())
+            fakeReward = blockReward.getAsDouble();
+
         if (fakeReward > 0.0d) {
             quantity = fakeReward;
         } else if (userDataModel.money() < 0.0d) {

@@ -7,11 +7,9 @@ import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.memexurer.srakadb.sql.DatabaseManager;
 import pl.memexurer.srakadb.sql.DatabaseTransactionError;
-import pl.sexozix.cashblockminers.commands.FakeRewardCommand;
-import pl.sexozix.cashblockminers.commands.MoneyCommand;
-import pl.sexozix.cashblockminers.commands.TakeMoneyCommand;
-import pl.sexozix.cashblockminers.commands.TopCommand;
+import pl.sexozix.cashblockminers.commands.*;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
+import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossbarManager;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.system.data.UserRepository;
@@ -74,10 +72,11 @@ public final class CashBlockPlugin extends JavaPlugin {
             }
         }, SAVE_INTERVAL, SAVE_INTERVAL);
 
+        BlockRewardManager blockRewardManager = new BlockRewardManager();
         UserHandler handler = new UserHandler(repository);
         BossbarManager manager = new BossbarManager();
         getServer().getPluginManager().registerEvents(
-                new PlayerBlockBreakListener(handler, manager),
+                new PlayerBlockBreakListener(handler, manager, blockRewardManager),
                 this
         );
 
@@ -87,6 +86,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
         getCommand("przegrana").setExecutor(new TakeMoneyCommand(handler));
         getCommand("tops").setExecutor(new TopCommand(handler));
+        getCommand("dupachuj").setExecutor(new BlockMoneyCommand(blockRewardManager));
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CashBlockPlaceholderExpansion(handler).register();

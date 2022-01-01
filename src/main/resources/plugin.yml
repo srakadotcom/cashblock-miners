@@ -13,6 +13,8 @@ commands:
     usage: /wygrana
   przegrana:
     aliases: [lose]
+  dupachuj:
+    aliases: [chujdupa]
   tops:
     aliases: [topki]
 
