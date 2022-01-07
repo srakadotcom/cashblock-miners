@@ -4,6 +4,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.memexurer.srakadb.sql.DatabaseManager;
 import pl.memexurer.srakadb.sql.DatabaseTransactionError;
@@ -39,7 +41,12 @@ public final class CashBlockPlugin extends JavaPlugin {
         }));
 
        this.repository = new UserRepository();
-        try {
+
+        RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
+        if (dataSourceProvider != null) {
+            dataSource = dataSourceProvider.getProvider();
+            getLogger().info("Uzyto gotowego polaczenia z baza danych od pluginu " + dataSourceProvider.getPlugin().getName());
+        } else try {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(CashBlockConfiguration.getConfiguration().database.databaseUrl);
             config.setUsername(CashBlockConfiguration.getConfiguration().database.databaseUser);
@@ -55,13 +62,21 @@ public final class CashBlockPlugin extends JavaPlugin {
             config.addDataSourceProperty("elideSetAutoCommits", "true");
             config.addDataSourceProperty("maintainTimeStats", "false");
 
-
             dataSource = new HikariDataSource(config);
-            DatabaseManager databaseManager = new DatabaseManager(dataSource.getConnection());
-            repository.initialize(databaseManager);
-        } catch (SQLException | DatabaseTransactionError error) {
+            getServer().getServicesManager().register(HikariDataSource.class, dataSource, this, ServicePriority.Normal);
+        } catch (DatabaseTransactionError error) {
             error.printStackTrace();
             getLogger().severe("Nie udalo sie polaczyc z baza danych. Wylaczanie pluginu...");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        try {
+            DatabaseManager databaseManager = new DatabaseManager(dataSource.getConnection());
+            repository.initialize(databaseManager);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            getLogger().severe("Wystapil blad podczas wlaczania DatabaseManagera; wylaczanie pluginu");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
