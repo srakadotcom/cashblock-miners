@@ -1,6 +1,8 @@
 package pl.sexozix.cashblockminers.system.bossbar;
 
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import pl.sexozix.cashblockminers.CashBlockConfiguration;
@@ -10,18 +12,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class BossbarManager {
+public class BossbarManagerImpl implements BossBarManager {
     private static final long BOSSBAR_SHOW_TIME = 5000L;
 
     private final Set<BossbarNotification> bossbarNotificationSet = new HashSet<>();
 
     public void createNotification(String playerName, double amountMined) {
+        if(CashBlockConfiguration.getConfiguration().bossbar == null)
+            return;
+
         BossBar bossBar = Bukkit.createBossBar(
                 ChatUtil.fixColor(CashBlockConfiguration.getConfiguration().bossbar.bossbarMoneyDisplayMessage
                         .replace("{PLAYER}", playerName)
                         .replace("{MONEY}", Double.toString(amountMined))),
-                CashBlockConfiguration.getConfiguration().bossbar.bossbarColor,
-                CashBlockConfiguration.getConfiguration().bossbar.bossbarStyle
+                BarColor.valueOf(CashBlockConfiguration.getConfiguration().bossbar.bossbarColor),
+                BarStyle.valueOf(CashBlockConfiguration.getConfiguration().bossbar.bossbarStyle)
         );
 
         for(Player player: Bukkit.getOnlinePlayers()) {
@@ -34,7 +39,8 @@ public class BossbarManager {
         ));
     }
 
-    public void doBossbarTick() {
+    @Override
+    public void doTick() {
         Iterator<BossbarNotification> each = bossbarNotificationSet.iterator();
 
         while (each.hasNext()) {
@@ -46,5 +52,4 @@ public class BossbarManager {
             }
         }
     }
-
 }

@@ -5,35 +5,21 @@ import eu.okaeri.configs.annotation.Comment;
 import eu.okaeri.configs.annotation.CustomKey;
 import eu.okaeri.configs.annotation.Header;
 import org.bukkit.Material;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
 import pl.sexozix.cashblockminers.system.reward.Reward;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @Header("## CashBlockPlugin - dojebany plugin na cashblocka")
 @Header("## Pozdro")
 public class CashBlockConfiguration extends OkaeriConfig {
     private static CashBlockConfiguration configuration;
-
-    public static CashBlockConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public static void setConfiguration(CashBlockConfiguration configuration) {
-        CashBlockConfiguration.configuration = configuration;
-    }
-
     @CustomKey("bossbar")
     public Bossbar bossbar = new Bossbar(
             "&8>> &7Gracz &2{PLAYER} &7wykopal &2{MONEY} &7hajsiwa &8<<",
-            BarColor.BLUE,
-            BarStyle.SOLID
+            "BLUE",
+            "SOLID"
     );
-
     @CustomKey("rewardsMoney")
     @Comment("Nagrody za kopanie")
     public List<Reward> rewardList = Arrays.asList(
@@ -46,7 +32,6 @@ public class CashBlockConfiguration extends OkaeriConfig {
             "",
             "jdbc:mysql://localhost:3306/database"
     );
-
     @CustomKey("messages")
     public Messages messages = new Messages(
             "&8>> &7Posiadasz &2{MONEY} &7hajsiwa!",
@@ -54,7 +39,6 @@ public class CashBlockConfiguration extends OkaeriConfig {
             "&7Twoj aktualny stan portfela &2{ACTUAL-MONEY}",
             "&7Gracz &2{PLAYER} &7wykopal &2{MINED-MONEY} hajsiwa"
     );
-
     @CustomKey("blocks")
     @Comment("Na jakie bloki ma dzialac ten plugin?")
     public List<Material> blocks = Arrays.asList(
@@ -62,24 +46,32 @@ public class CashBlockConfiguration extends OkaeriConfig {
             Material.BEDROCK
     );
 
-    public class Bossbar extends OkaeriConfig{
+    public static CashBlockConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public static void setConfiguration(CashBlockConfiguration configuration) {
+        CashBlockConfiguration.configuration = configuration;
+    }
+
+    public class Bossbar extends OkaeriConfig {
         @CustomKey("message")
         public String bossbarMoneyDisplayMessage;
         @CustomKey("color")
         @Comment("Kolor bossbara")
-        public BarColor bossbarColor;
+        public String bossbarColor;
         @CustomKey("style")
         @Comment("Styl bossbara")
-        public BarStyle bossbarStyle;
+        public String bossbarStyle;
 
-        public Bossbar(String bossbarMoneyDisplayMessage, BarColor bossbarColor, BarStyle bossbarStyle) {
+        public Bossbar(String bossbarMoneyDisplayMessage, String bossbarColor, String bossbarStyle) {
             this.bossbarMoneyDisplayMessage = bossbarMoneyDisplayMessage;
             this.bossbarColor = bossbarColor;
             this.bossbarStyle = bossbarStyle;
         }
     }
 
-    public class Database extends OkaeriConfig{
+    public class Database extends OkaeriConfig {
         @CustomKey("user")
         @Comment("Nazwa uzytkownika bazy danych")
         public String databaseUser;
@@ -97,7 +89,7 @@ public class CashBlockConfiguration extends OkaeriConfig {
         }
     }
 
-    public class Messages extends OkaeriConfig{
+    public class Messages extends OkaeriConfig {
         @CustomKey("commandHajs")
         @Comment("Wiadomosc po wpisaniu /hajs (Zmienna: {MONEY} pokazuje ilosc twojego hajsu)")
         public String hajsCommandMessage;

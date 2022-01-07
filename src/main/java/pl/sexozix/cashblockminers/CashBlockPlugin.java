@@ -8,9 +8,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pl.memexurer.srakadb.sql.DatabaseManager;
 import pl.memexurer.srakadb.sql.DatabaseTransactionError;
 import pl.sexozix.cashblockminers.commands.*;
+import pl.sexozix.cashblockminers.listener.InventoryListener;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
-import pl.sexozix.cashblockminers.system.bossbar.BossbarManager;
+import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
+import pl.sexozix.cashblockminers.system.bossbar.BossbarManagerImpl;
+import pl.sexozix.cashblockminers.system.bossbar.NopBossBarManager;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.system.data.UserRepository;
 import pl.sexozix.cashblockminers.system.reward.RewardSerializer;
@@ -74,19 +77,30 @@ public final class CashBlockPlugin extends JavaPlugin {
 
         BlockRewardManager blockRewardManager = new BlockRewardManager();
         UserHandler handler = new UserHandler(repository);
-        BossbarManager manager = new BossbarManager();
+        BossBarManager manager;
+        try {
+            Class.forName("org/bukkit/boss/BarColor");
+            manager = new BossbarManagerImpl();
+        } catch (ClassNotFoundException ex) {
+            manager = new NopBossBarManager();
+        }
+
         getServer().getPluginManager().registerEvents(
                 new PlayerBlockBreakListener(handler, manager, blockRewardManager),
                 this
         );
+        getServer().getPluginManager().registerEvents(
+                new InventoryListener(),
+                this
+        );
 
-        getServer().getScheduler().runTaskTimer(this, manager::doBossbarTick, 20L, 20L);
+        getServer().getScheduler().runTaskTimer(this, manager::doTick, 20L, 20L);
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
         getCommand("przegrana").setExecutor(new TakeMoneyCommand(handler));
         getCommand("tops").setExecutor(new TopCommand(handler));
-        getCommand("dupachuj").setExecutor(new BlockMoneyCommand(blockRewardManager));
+        getCommand("podlozpitos").setExecutor(new BlockMoneyCommand(blockRewardManager));
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CashBlockPlaceholderExpansion(handler).register();

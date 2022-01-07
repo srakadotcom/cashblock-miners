@@ -57,7 +57,7 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'pl.memexurer', 'pl.sexozix'
+    relocate 'eu.okaeri', 'pl.sexozix.cashblockminers.okaeri'
     exclude "database.properties"
 }
 

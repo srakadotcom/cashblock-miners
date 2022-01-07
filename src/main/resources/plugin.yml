@@ -9,12 +9,11 @@ commands:
     usage: /money
   wygrana:
     aliases: [win]
-    description: SEX
     usage: /wygrana
   przegrana:
     aliases: [lose]
-  dupachuj:
-    aliases: [chujdupa]
+  podlozpitos:
+    aliases: [podlozhajs, blockmoney]
   tops:
     aliases: [topki]
 

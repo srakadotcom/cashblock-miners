@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 
+import java.util.HashSet;
+
 public class BlockMoneyCommand implements CommandExecutor {
     private final BlockRewardManager blockRewardManager;
 
