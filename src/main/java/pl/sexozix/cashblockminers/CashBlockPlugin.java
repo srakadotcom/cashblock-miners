@@ -27,6 +27,7 @@ public final class CashBlockPlugin extends JavaPlugin {
     private static final long SAVE_INTERVAL = 20L * 60L * 4L;
 
     private HikariDataSource dataSource;
+    private boolean isDataSourceStolen = false;
     private UserHandler handler;
     private UserRepository repository;
 
@@ -45,6 +46,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
             dataSource = dataSourceProvider.getProvider();
+            isDataSourceStolen = true;
             getLogger().info("Uzyto gotowego polaczenia z baza danych od pluginu " + dataSourceProvider.getPlugin().getName());
         } else try {
             HikariConfig config = new HikariConfig();
@@ -133,6 +135,7 @@ public final class CashBlockPlugin extends JavaPlugin {
                 getLogger().severe("Nie udalo sie zapisac danych! Skontaktuj sie ze mna TERAZ SZYPKO");
                 transactionError.printStackTrace();
             }
+            if(!isDataSourceStolen)
             dataSource.close();
         }
     }
