@@ -32,7 +32,8 @@ public final class PlayerBlockBreakListener implements Listener {
                 new FakeRewardTrasformer(),
                 new BlockRewardTransformer(blockRewardManager),
                 new ConfigurationTransformer(),
-                new HelmetTransformer());
+                new HelmetTransformer(),
+                new PlayerBoostTransformer());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

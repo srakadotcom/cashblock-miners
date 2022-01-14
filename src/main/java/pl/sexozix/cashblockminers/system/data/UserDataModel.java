@@ -11,13 +11,15 @@ public final class UserDataModel {
     private final String name;
     private double money;
     private boolean update;
+    private long boostExpire;
 
     private double fakeReward;
 
-    public UserDataModel(UUID uuid, String name, double money) {
+    public UserDataModel(UUID uuid, String name, double money, long boostExpire) {
         this.uuid = uuid;
         this.name = name;
         this.money = money;
+        this.boostExpire = boostExpire;
     }
 
     public void addMoney(double value) {
@@ -29,6 +31,18 @@ public final class UserDataModel {
 
         this.money += value;
         this.update = true;
+    }
+
+    public void setBoostExpire(long expire) {
+        this.boostExpire = expire;
+    }
+
+    public long boostExpire() {
+        return boostExpire;
+    }
+
+    public boolean isBoostActive() {
+        return boostExpire > System.currentTimeMillis();
     }
 
     public UUID uuid() {
@@ -78,7 +92,8 @@ public final class UserDataModel {
             return new UserDataModel(
                     UUID.fromString(resultSet.getString("PlayerUniqueId")),
                     resultSet.getString("PlayerName"),
-                    resultSet.getDouble("PlayerMoney")
+                    resultSet.getDouble("PlayerMoney"),
+                    resultSet.getLong("BoostExpire")
             );
         }
     }

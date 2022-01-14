@@ -1,7 +1,6 @@
 package pl.sexozix.cashblockminers.system.data;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import pl.memexurer.srakadb.sql.*;
 import pl.sexozix.cashblockminers.system.data.UserDataModel.Deserializer;
@@ -14,6 +13,7 @@ public class UserRepository {
       .addPrimaryColumn("PlayerUniqueId", DatabaseDatatype.varCharacter(36))
       .addColumn("PlayerName", DatabaseDatatype.varCharacter(16))
       .addColumn("PlayerMoney", DatabaseDatatype.decimal(15, 2))
+      .addColumn("BoostExpire", DatabaseDatatype.integer(8))
       .build();
 
   public void initialize(DatabaseManager manager) {
@@ -39,6 +39,7 @@ public class UserRepository {
           transaction.set("PlayerUniqueId", dataModel.uuid().toString());
           transaction.set("PlayerName", dataModel.name());
           transaction.set("PlayerMoney", dataModel.money());
+          transaction.set("BoostExpire", dataModel.boostExpire());
           transaction.addBatch();
       }
     }
@@ -53,7 +54,7 @@ public class UserRepository {
   public UserDataModel getOrCreateUser(String name, UUID uuid) {
     UserDataModel dataModel = dataModelMap.get(uuid);
     if(dataModel == null) {
-      dataModelMap.put(uuid, dataModel = new UserDataModel(uuid, name, 0));
+      dataModelMap.put(uuid, dataModel = new UserDataModel(uuid, name, 0, 0));
     }
 
     return dataModel;

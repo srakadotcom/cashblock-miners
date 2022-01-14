@@ -16,4 +16,6 @@ commands:
     aliases: [podlozhajs, blockmoney]
   tops:
     aliases: [topki]
+  boost:
+    aliases: [playerboost, turbocash]
 
