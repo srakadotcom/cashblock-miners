@@ -140,4 +140,8 @@ public final class CashBlockPlugin extends JavaPlugin {
             dataSource.close();
         }
     }
+
+  public UserHandler getHandler() {
+    return handler;
+  }
 }
