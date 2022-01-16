@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
@@ -15,10 +14,7 @@ import pl.sexozix.cashblockminers.commands.*;
 import pl.sexozix.cashblockminers.listener.InventoryListener;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
-import pl.sexozix.cashblockminers.system.bossbar.BoostBossbarTask;
 import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
-import pl.sexozix.cashblockminers.system.bossbar.BossbarManagerImpl;
-import pl.sexozix.cashblockminers.system.bossbar.NopBossBarManager;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.system.data.UserRepository;
 import pl.sexozix.cashblockminers.system.reward.RewardSerializer;
@@ -33,14 +29,6 @@ public final class CashBlockPlugin extends JavaPlugin {
     private boolean isDataSourceStolen = false;
     private UserHandler handler;
     private UserRepository repository;
-    private BukkitAudiences adventure;
-
-    public BukkitAudiences adventure() {
-        if(adventure == null) {
-          throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
-        }
-        return adventure;
-      }
 
     @Override
     public void onEnable() {
@@ -53,7 +41,6 @@ public final class CashBlockPlugin extends JavaPlugin {
         }));
 
        this.repository = new UserRepository();
-       adventure = BukkitAudiences.create(this);
 
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
@@ -105,14 +92,8 @@ public final class CashBlockPlugin extends JavaPlugin {
         }, SAVE_INTERVAL, SAVE_INTERVAL);
 
         BlockRewardManager blockRewardManager = new BlockRewardManager();
-        UserHandler handler = new UserHandler(repository);
-        BossBarManager manager;
-        try {
-            Class.forName("org/bukkit/boss/BarColor");
-            manager = new BossbarManagerImpl();
-        } catch (ClassNotFoundException ex) {
-            manager = new NopBossBarManager();
-        }
+        this.handler = new UserHandler(repository);
+        BossBarManager manager = BossBarManager.findBossbarManager(this);
 
         getServer().getPluginManager().registerEvents(
                 new PlayerBlockBreakListener(handler, manager, blockRewardManager),
@@ -123,8 +104,7 @@ public final class CashBlockPlugin extends JavaPlugin {
                 this
         );
 
-        getServer().getScheduler().runTaskTimer(this, manager::doTick, 20L, 20L);
-        new BoostBossbarTask(handler).runTaskTimer(this, 0L, 20L);
+        getServer().getScheduler().runTaskTimer(this, manager::doTick, 5L, 5L);
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
@@ -152,10 +132,6 @@ public final class CashBlockPlugin extends JavaPlugin {
             if(!isDataSourceStolen)
             dataSource.close();
         }
-        if(this.adventure != null) {
-            this.adventure.close();
-            this.adventure = null;
-          }
     }
 
   public UserHandler getHandler() {
@@ -164,9 +140,5 @@ public final class CashBlockPlugin extends JavaPlugin {
 
   public static CashBlockPlugin getInstance() {
       return JavaPlugin.getPlugin(CashBlockPlugin.class);
-  }
-
-  public BukkitAudiences getAdventure() {
-      return adventure;
   }
 }

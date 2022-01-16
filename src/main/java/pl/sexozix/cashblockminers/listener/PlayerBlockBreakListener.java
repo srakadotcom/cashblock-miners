@@ -1,16 +1,21 @@
 package pl.sexozix.cashblockminers.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.FireworkEffect.Type;
 import org.bukkit.GameMode;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.meta.FireworkMeta;
 import pl.sexozix.cashblockminers.CashBlockConfiguration;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
-import pl.sexozix.cashblockminers.system.bossbar.BossbarManagerImpl;
 import pl.sexozix.cashblockminers.system.chance.*;
 import pl.sexozix.cashblockminers.system.data.UserDataModel;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
@@ -53,6 +58,14 @@ public final class PlayerBlockBreakListener implements Listener {
             quantity = Math.round(quantity * 100.0) / 100.0;
 
             String moneyFormat = String.format("%.2f", userDataModel.money());
+
+            Firework firework = (Firework) event.getBlock().getWorld().spawnEntity(event.getPlayer()
+                .getLocation(), EntityType.FIREWORK);
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.setPower(0);
+            meta.addEffect(FireworkEffect.builder().trail(true).with(Type.CREEPER).withColor(
+                Color.GREEN).build());
+            firework.setFireworkMeta(meta);
 
             userDataModel.addMoney(quantity);
             try {

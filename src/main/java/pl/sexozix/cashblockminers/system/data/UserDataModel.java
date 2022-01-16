@@ -1,5 +1,6 @@
 package pl.sexozix.cashblockminers.system.data;
 
+import org.bukkit.Bukkit;
 import pl.memexurer.srakadb.sql.ResultSetDeserializer;
 
 import java.sql.ResultSet;
@@ -12,14 +13,16 @@ public final class UserDataModel {
     private double money;
     private boolean update;
     private long boostExpire;
+    private long boostStart;
 
     private double fakeReward;
 
-    public UserDataModel(UUID uuid, String name, double money, long boostExpire) {
+    public UserDataModel(UUID uuid, String name, double money, long boostExpire, long boostStart) {
         this.uuid = uuid;
         this.name = name;
         this.money = money;
         this.boostExpire = boostExpire;
+        this.boostStart = boostStart;
     }
 
     public void addMoney(double value) {
@@ -35,10 +38,19 @@ public final class UserDataModel {
 
     public void setBoostExpire(long expire) {
         this.boostExpire = expire;
+        this.boostStart = System.currentTimeMillis();
     }
 
     public long boostExpire() {
         return boostExpire;
+    }
+
+    long boostStart() {
+        return boostStart;
+    }
+
+    public float boostPercentage() {
+        return (float) (boostExpire - System.currentTimeMillis()) / (boostExpire - boostStart);
     }
 
     public boolean isBoostActive() {
@@ -93,8 +105,8 @@ public final class UserDataModel {
                     UUID.fromString(resultSet.getString("PlayerUniqueId")),
                     resultSet.getString("PlayerName"),
                     resultSet.getDouble("PlayerMoney"),
-                    resultSet.getLong("BoostExpire")
-            );
+                    resultSet.getLong("BoostExpire"),
+                    resultSet.getLong("BoostStart"));
         }
     }
 }

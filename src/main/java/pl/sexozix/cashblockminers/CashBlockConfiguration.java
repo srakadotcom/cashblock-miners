@@ -20,6 +20,12 @@ public class CashBlockConfiguration extends OkaeriConfig {
             "BLUE",
             "SOLID"
     );
+    @CustomKey("turbocash_bossbar")
+    public Bossbar turbocashBossbar = new Bossbar(
+            "&8>> &7Turbocash: &6{TIME} &8<<",
+            "YELLOW",
+            "SOLID"
+    );
     @CustomKey("rewardsMoney")
     @Comment("Nagrody za kopanie")
     public List<Reward> rewardList = Arrays.asList(
