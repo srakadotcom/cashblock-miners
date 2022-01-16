@@ -4,6 +4,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +15,7 @@ import pl.sexozix.cashblockminers.commands.*;
 import pl.sexozix.cashblockminers.listener.InventoryListener;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
+import pl.sexozix.cashblockminers.system.bossbar.BoostBossbarTask;
 import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossbarManagerImpl;
 import pl.sexozix.cashblockminers.system.bossbar.NopBossBarManager;
@@ -30,6 +33,14 @@ public final class CashBlockPlugin extends JavaPlugin {
     private boolean isDataSourceStolen = false;
     private UserHandler handler;
     private UserRepository repository;
+    private BukkitAudiences adventure;
+
+    public BukkitAudiences adventure() {
+        if(adventure == null) {
+          throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return adventure;
+      }
 
     @Override
     public void onEnable() {
@@ -42,6 +53,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         }));
 
        this.repository = new UserRepository();
+       adventure = BukkitAudiences.create(this);
 
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
@@ -112,6 +124,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         );
 
         getServer().getScheduler().runTaskTimer(this, manager::doTick, 20L, 20L);
+        new BoostBossbarTask(handler).runTaskTimer(this, 0L, 20L);
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
@@ -139,9 +152,21 @@ public final class CashBlockPlugin extends JavaPlugin {
             if(!isDataSourceStolen)
             dataSource.close();
         }
+        if(this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+          }
     }
 
   public UserHandler getHandler() {
     return handler;
+  }
+
+  public static CashBlockPlugin getInstance() {
+      return JavaPlugin.getPlugin(CashBlockPlugin.class);
+  }
+
+  public BukkitAudiences getAdventure() {
+      return adventure;
   }
 }

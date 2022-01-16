@@ -54,10 +54,12 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.0'
+    implementation "net.kyori:adventure-platform-bukkit:4.0.0"
 }
 
 shadowJar {
     relocate 'eu.okaeri', 'pl.sexozix.cashblockminers.okaeri'
+    relocate 'net.kyori', 'pl.sexozix.cashblockminers.kyori'
     exclude "database.properties"
 }
 

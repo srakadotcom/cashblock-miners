@@ -8,6 +8,10 @@
 # IntelliJ
 out/
 
+/bin/
+
+.vscode/
+
 # Compiled class file
 *.class
 
