@@ -8,13 +8,15 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bossy {
     private static int CUSTOM_ID;
@@ -44,12 +46,24 @@ public class Bossy {
             public void run() {
                 for (BossBar bar : bossBars.values()) {
                     if (bar.isSpawned()) {
-                        despawn(bar);
-                        spawn(bar, getDistantLocation(bar.getPlayer()));
+                        teleport(bar, getDistantLocation(bar.player));
                     }
                 }
             }
         }.runTaskTimer(plugin, 0, frequency);
+    }
+
+    private static BlockFace getDirection(Location loc) {
+        float dir = Math.round(loc.getYaw() / 90);
+        if (dir == -4 || dir == 0 || dir == 4)
+            return BlockFace.SOUTH;
+        if (dir == -1 || dir == 3)
+            return BlockFace.EAST;
+        if (dir == -2 || dir == 2)
+            return BlockFace.NORTH;
+        if (dir == -3 || dir == 1)
+            return BlockFace.WEST;
+        throw new IllegalArgumentException("Twoja stara");
     }
 
     /**
@@ -143,6 +157,23 @@ public class Bossy {
         spawn(bar, getDistantLocation(player));
     }
 
+    private void teleport(BossBar bar, Location location) {
+        PacketContainer teleportPacket = new PacketContainer(PacketType.Play.Server.ENTITY_TELEPORT);
+        StructureModifier<Object> teleportPacketModifier = teleportPacket.getModifier();
+        teleportPacketModifier.write(0, CUSTOM_ID);
+        teleportPacketModifier.write(1, location.getBlockX() * 32);
+        teleportPacketModifier.write(2, location.getBlockY() * 32);
+        teleportPacketModifier.write(3, location.getBlockZ() * 32);
+        teleportPacketModifier.write(4, (byte) ((int) (location.getYaw() * 256 / 360)));
+        teleportPacketModifier.write(5, (byte) ((int) (location.getPitch() * 256 / 360)));
+        teleportPacketModifier.write(6, false);
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bar.getPlayer(), teleportPacket, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
     private BossBar getBossBar(Player player) {
         return bossBars.get(player);
     }
@@ -152,8 +183,13 @@ public class Bossy {
         bossBars.put(player, bossBar);
         return bossBar;
     }
+
     private Location getDistantLocation(Player player) {
-        return player.getEyeLocation().add(player.getEyeLocation().getDirection().normalize().multiply(5));
+        Location loc = player.getLocation();
+        loc.setYaw(loc.getYaw());
+        loc.setPitch(loc.getPitch() - 30);
+        loc.add(loc.getDirection().multiply(40));
+        return loc;
     }
 
     private void spawn(BossBar bar, Location location) {
