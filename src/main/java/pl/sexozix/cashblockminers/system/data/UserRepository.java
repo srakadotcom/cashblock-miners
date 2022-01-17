@@ -50,7 +50,7 @@ public class UserRepository {
   public List<UserDataModel> createTops() {
     List<UserDataModel> dataModelList = new ArrayList<>(dataModelMap.values());
     dataModelList.sort(Comparator.comparingDouble(UserDataModel::money).reversed());
-    return dataModelList.subList(0, Math.min(10, dataModelList.size()));
+    return dataModelList;
   }
 
   public UserDataModel getOrCreateUser(String name, UUID uuid) {

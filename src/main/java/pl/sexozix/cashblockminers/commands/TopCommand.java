@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import pl.sexozix.cashblockminers.CashBlockPlugin;
 import pl.sexozix.cashblockminers.system.data.UserDataModel;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.system.inventory.ClickableInventory;
@@ -18,9 +19,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class TopCommand implements CommandExecutor {
+    private final CashBlockPlugin plugin;
     private final UserHandler userHandler;
 
-    public TopCommand(UserHandler userHandler) {
+    public TopCommand(CashBlockPlugin plugin, UserHandler userHandler) {
+        this.plugin = plugin;
         this.userHandler = userHandler;
     }
 
@@ -36,14 +39,17 @@ public class TopCommand implements CommandExecutor {
             return true;
         }
 
-        CompletableFuture<List<UserDataModel>> tops = userHandler.fetchTops();//wyjebane
+        CompletableFuture<List<UserDataModel>> tops = userHandler.fetchTops();
         sender.sendMessage(ChatColor.GRAY + "Czekaj, trwa generowanie topek...");
         tops.whenComplete((userDataModels, throwable) -> {
             if (throwable != null) {
                 sender.sendMessage(ChatColor.RED + "Wystapil blad podczas generowania topek: " + throwable.getMessage());
                 throwable.printStackTrace();
             } else {
-                ((Player) sender).openInventory(new TopInventory(userDataModels).getInventory());
+                sender.sendMessage(ChatColor.GREEN + "Wygenerowano topki!");
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    ((Player) sender).openInventory(new TopInventory(userDataModels).getInventory());
+                });
             }
         });
         return true;
@@ -53,24 +59,22 @@ public class TopCommand implements CommandExecutor {
         private final List<UserDataModel> dataModels;
 
         private TopInventory(List<UserDataModel> dataModels) {
-            this.dataModels = dataModels;
+            this.dataModels = dataModels.subList(0, Math.min(27, dataModels.size()));
         }
 
         private static ItemStack createHeadItemStack() {
             try {
                 return new ItemStack(Material.PLAYER_HEAD);
-            } catch (Exception ex) {
+            } catch (NoSuchFieldError ex) {
                 return new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
             }
         }
 
         @Override
         public Inventory getInventory() {
-            Inventory inventory = Bukkit.createInventory(this, 9, "Topki");
-            int i = 1;
-
-            for (UserDataModel dataModel : dataModels) {
-                inventory.setItem(i - 1, createPlayerSkull(dataModel, i++));
+            Inventory inventory = Bukkit.createInventory(this, 27, "Topki");
+            for(int i = 0; i < dataModels.size(); i++) {
+                inventory.setItem(i, createPlayerSkull(dataModels.get(i), i + 1));
             }
             return inventory;
         }

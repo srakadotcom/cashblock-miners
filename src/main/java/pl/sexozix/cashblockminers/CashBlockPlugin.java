@@ -109,7 +109,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
         getCommand("przegrana").setExecutor(new TakeMoneyCommand(handler));
-        getCommand("tops").setExecutor(new TopCommand(handler));
+        getCommand("tops").setExecutor(new TopCommand(this, handler));
         getCommand("podlozpitos").setExecutor(new BlockMoneyCommand(blockRewardManager));
         getCommand("boost").setExecutor(new PlayerBoostCommand(handler));
 
