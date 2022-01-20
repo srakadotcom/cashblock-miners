@@ -4,13 +4,17 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
-
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.memexurer.srakadb.sql.DatabaseManager;
 import pl.memexurer.srakadb.sql.DatabaseTransactionError;
 import pl.sexozix.cashblockminers.commands.*;
+import pl.sexozix.cashblockminers.listener.AirdropListener;
 import pl.sexozix.cashblockminers.listener.InventoryListener;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
@@ -21,6 +25,9 @@ import pl.sexozix.cashblockminers.system.reward.RewardSerializer;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class CashBlockPlugin extends JavaPlugin {
     private static final long SAVE_INTERVAL = 20L * 60L * 4L;
@@ -29,10 +36,11 @@ public final class CashBlockPlugin extends JavaPlugin {
     private boolean isDataSourceStolen = false;
     private UserHandler handler;
     private UserRepository repository;
+    private Set<Location> airdrops = new HashSet<>();
 
     @Override
     public void onEnable() {
-       CashBlockConfiguration.setConfiguration(ConfigManager.create(CashBlockConfiguration.class, (it) -> {
+        CashBlockConfiguration.setConfiguration(ConfigManager.create(CashBlockConfiguration.class, (it) -> {
             it.withConfigurer(new YamlBukkitConfigurer());
             it.withSerdesPack(pack -> pack.register(new RewardSerializer()));
             it.withBindFile(new File(getDataFolder(), "config.yml"));
@@ -40,7 +48,7 @@ public final class CashBlockPlugin extends JavaPlugin {
             it.load(true); // XDDDDDDDDDd
         }));
 
-       this.repository = new UserRepository();
+        this.repository = new UserRepository();
 
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
@@ -91,6 +99,22 @@ public final class CashBlockPlugin extends JavaPlugin {
             }
         }, SAVE_INTERVAL, SAVE_INTERVAL);
 
+        if (CashBlockConfiguration.getConfiguration().airdrop != null) {
+            getServer().getPluginManager().registerEvents(new AirdropListener(airdrops, handler), this);
+            getServer().getScheduler().runTaskTimer(this, () -> {
+                World world = this.getServer().getWorlds().get(0);
+
+                int x = ThreadLocalRandom.current().nextInt(-500, 1500);
+                int z = ThreadLocalRandom.current().nextInt(-500, 1500);
+                double y = world.getHighestBlockYAt(x, z);
+                Location location = new Location(world, x, y, z);
+
+                world.getBlockAt(location).setType(Material.GOLD_BLOCK);
+                Bukkit.broadcastMessage(CashBlockConfiguration.getConfiguration().airdrop.getFormattedMessage(x, z));
+                airdrops.add(location);
+            }, CashBlockConfiguration.getConfiguration().airdrop.time, CashBlockConfiguration.getConfiguration().airdrop.time);
+        }
+
         BlockRewardManager blockRewardManager = new BlockRewardManager();
         this.handler = new UserHandler(repository);
         BossBarManager manager = BossBarManager.findBossbarManager(this);
@@ -129,16 +153,16 @@ public final class CashBlockPlugin extends JavaPlugin {
                 getLogger().severe("Nie udalo sie zapisac danych! Skontaktuj sie ze mna TERAZ SZYPKO");
                 transactionError.printStackTrace();
             }
-            if(!isDataSourceStolen)
-            dataSource.close();
+            if (!isDataSourceStolen)
+                dataSource.close();
         }
     }
 
-  public UserHandler getHandler() {
-    return handler;
-  }
+    public UserHandler getHandler() {
+        return handler;
+    }
 
-  public static CashBlockPlugin getInstance() {
-      return JavaPlugin.getPlugin(CashBlockPlugin.class);
-  }
+    public static CashBlockPlugin getInstance() {
+        return JavaPlugin.getPlugin(CashBlockPlugin.class);
+    }
 }

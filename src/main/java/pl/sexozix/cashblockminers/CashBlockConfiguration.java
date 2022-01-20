@@ -6,6 +6,7 @@ import eu.okaeri.configs.annotation.CustomKey;
 import eu.okaeri.configs.annotation.Header;
 import org.bukkit.Material;
 import pl.sexozix.cashblockminers.system.reward.Reward;
+import pl.sexozix.cashblockminers.utils.ChatUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,12 +53,45 @@ public class CashBlockConfiguration extends OkaeriConfig {
             Material.BEDROCK
     );
 
+    public Airdrop airdrop = new Airdrop(20 * 60, """
+            &7UWAGA UWAGA
+            &7ZARAZ PIERDOLNIE AIRDROP
+            &7NA KORDACH &6X: {COORDX} Z: {COORDZ}
+            """, """
+            &7GRATULACJE KURWIU
+            &7WYKOPALES &6{PITOS} PITOSU
+            """);
+
     public static CashBlockConfiguration getConfiguration() {
         return configuration;
     }
 
     public static void setConfiguration(CashBlockConfiguration configuration) {
         CashBlockConfiguration.configuration = configuration;
+    }
+
+    public class Airdrop extends OkaeriConfig {
+        @Comment("Co ile ma pierdolnac airdrop (w tickach 1 tick = 20 sekund)")
+        public long time;
+        @Comment("Wiadomosc o airdropach")
+        public String message;
+        @Comment("Wiadomosc wysylana do gracza jak wykopie airdropa")
+        public String messageReceive;
+
+        public Airdrop(long time, String message, String messageReceive) {
+            this.time = time;
+            this.message = message;
+            this.messageReceive = messageReceive;
+        }
+
+        public String getFormattedMessage(int coordX, int coordZ) {
+            return ChatUtil.fixColor(message.replace("{COORDX}", Integer.toString(coordX))
+                    .replace("{COORDZ}", Integer.toString(coordZ)));
+        }
+
+        public String getFormattedReceiveMessage(double amount) {
+            return ChatUtil.fixColor(message.replace("{PITOS}", Double.toString(amount)));
+        }
     }
 
     public class Bossbar extends OkaeriConfig {
