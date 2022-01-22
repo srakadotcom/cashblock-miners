@@ -36,6 +36,13 @@ public final class UserDataModel {
         this.update = true;
     }
 
+    public void setMoney(double money) {
+        if (money != money)
+            throw new IllegalArgumentException("NaN value detected!");
+        this.money = money;
+        this.update = true;
+    }
+
     public void setBoostExpire(long expire) {
         this.boostExpire = expire;
         this.boostStart = System.currentTimeMillis();

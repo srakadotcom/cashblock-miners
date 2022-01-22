@@ -18,4 +18,6 @@ commands:
     aliases: [topki]
   boost:
     aliases: [playerboost, turbocash]
+  sethajs:
+    aliases: [setmoney, setmonety, ustawkase, ustawhajs]
 
