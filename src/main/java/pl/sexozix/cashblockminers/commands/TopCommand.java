@@ -85,7 +85,7 @@ public class TopCommand implements CommandExecutor {
 
             SkullMeta meta = (SkullMeta) headStack.getItemMeta();
             meta.setDisplayName(ChatColor.GRAY.toString() + topNumber + ". " + dataModel.name());
-            meta.setLore(List.of(ChatColor.GRAY + "Ilosc hajsu: " + dataModel.money()));
+            meta.setLore(List.of(ChatColor.GRAY + "Ilosc hajsu: " + String.format("%.2f", dataModel.money())));
             headStack.setItemMeta(meta);
             return headStack;
         }
