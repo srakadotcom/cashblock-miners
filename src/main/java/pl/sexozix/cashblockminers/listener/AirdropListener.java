@@ -8,6 +8,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import pl.sexozix.cashblockminers.CashBlockConfiguration;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -26,14 +28,14 @@ public class AirdropListener implements Listener {
             event.setCancelled(true);
             event.getBlock().setType(Material.AIR);
             double dupa = getDupa();
-            handler.getCachedDataModel(event.getPlayer().getUniqueId()).addMoney(dupa);
+            handler.getUserDataModel(event.getPlayer()).addMoney(dupa);
             event.getPlayer().sendMessage(CashBlockConfiguration.getConfiguration().airdrop.getFormattedReceiveMessage(dupa));
         }
     }
 
     private double getDupa() {
-        double random = ThreadLocalRandom.current().nextDouble(5);
-        String dupa = String.format("%.1f", random);
-        return Double.parseDouble(dupa);
+        return BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(5))
+                .setScale(1, RoundingMode.HALF_DOWN)
+                .doubleValue();
     }
 }

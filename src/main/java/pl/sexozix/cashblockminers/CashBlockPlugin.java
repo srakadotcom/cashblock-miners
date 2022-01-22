@@ -36,7 +36,8 @@ public final class CashBlockPlugin extends JavaPlugin {
     private boolean isDataSourceStolen = false;
     private UserHandler handler;
     private UserRepository repository;
-    private Set<Location> airdrops = new HashSet<>();
+    private final Set<Location> airdrops = new HashSet<>();
+    private long nextAirdropTime;
 
     @Override
     public void onEnable() {
@@ -99,22 +100,6 @@ public final class CashBlockPlugin extends JavaPlugin {
             }
         }, SAVE_INTERVAL, SAVE_INTERVAL);
 
-        if (CashBlockConfiguration.getConfiguration().airdrop != null) {
-            getServer().getPluginManager().registerEvents(new AirdropListener(airdrops, handler), this);
-            getServer().getScheduler().runTaskTimer(this, () -> {
-                World world = this.getServer().getWorlds().get(0);
-
-                int x = ThreadLocalRandom.current().nextInt(-500, 1500);
-                int z = ThreadLocalRandom.current().nextInt(-500, 1500);
-                double y = world.getHighestBlockYAt(x, z);
-                Location location = new Location(world, x, y, z);
-
-                world.getBlockAt(location).setType(Material.GOLD_BLOCK);
-                Bukkit.broadcastMessage(CashBlockConfiguration.getConfiguration().airdrop.getFormattedMessage(x, z));
-                airdrops.add(location);
-            }, CashBlockConfiguration.getConfiguration().airdrop.time, CashBlockConfiguration.getConfiguration().airdrop.time);
-        }
-
         BlockRewardManager blockRewardManager = new BlockRewardManager();
         this.handler = new UserHandler(repository);
         BossBarManager manager = BossBarManager.findBossbarManager(this);
@@ -129,6 +114,33 @@ public final class CashBlockPlugin extends JavaPlugin {
         );
 
         getServer().getScheduler().runTaskTimer(this, manager::doTick, 5L, 5L);
+
+        if (CashBlockConfiguration.getConfiguration().airdrop != null) {
+            getServer().getPluginManager().registerEvents(new AirdropListener(airdrops, handler), this);
+            getServer().getScheduler().runTaskTimer(this, () -> {
+                if(System.currentTimeMillis() <= nextAirdropTime)
+                    return;
+
+                World world = this.getServer().getWorlds().get(0);
+
+                int x = ThreadLocalRandom.current().nextInt(CashBlockConfiguration.getConfiguration().airdrop.min, CashBlockConfiguration.getConfiguration().airdrop.max);
+                int z = ThreadLocalRandom.current().nextInt(CashBlockConfiguration.getConfiguration().airdrop.min, CashBlockConfiguration.getConfiguration().airdrop.max);
+                double y = world.getHighestBlockYAt(x, z);
+                Location location = new Location(world, x, y, z);
+
+                int random = ThreadLocalRandom.current().nextInt(3);
+                if(random == 0)
+                    world.getBlockAt(location).setType(Material.IRON_BLOCK);
+                else if(random == 1) {
+                    world.getBlockAt(location).setType(Material.GOLD_BLOCK);
+                } else {
+                    world.getBlockAt(location).setType(Material.DIAMOND_BLOCK);
+                }
+                Bukkit.broadcastMessage(CashBlockConfiguration.getConfiguration().airdrop.getFormattedMessage(x, z));
+                airdrops.add(location);
+                nextAirdropTime = System.currentTimeMillis() + (CashBlockConfiguration.getConfiguration().airdrop.time * 1000);
+            }, 20L, 20L);
+        }
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));
@@ -165,5 +177,9 @@ public final class CashBlockPlugin extends JavaPlugin {
 
     public static CashBlockPlugin getInstance() {
         return JavaPlugin.getPlugin(CashBlockPlugin.class);
+    }
+
+    public long getNextAirdropTime() {
+        return nextAirdropTime;
     }
 }
