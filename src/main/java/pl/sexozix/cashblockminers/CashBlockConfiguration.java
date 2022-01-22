@@ -53,14 +53,18 @@ public class CashBlockConfiguration extends OkaeriConfig {
             Material.BEDROCK
     );
 
-    public Airdrop airdrop = new Airdrop(20 * 60, """
+    public Airdrop airdrop = new Airdrop(120, """
             &7UWAGA UWAGA
             &7ZARAZ PIERDOLNIE AIRDROP
             &7NA KORDACH &6X: {COORDX} Z: {COORDZ}
             """, """
             &7GRATULACJE KURWIU
             &7WYKOPALES &6{PITOS} PITOSU
-            """);
+            """, new Bossbar(
+            "&8>> &7Airdrop za: &6{TIME} &8<<",
+            "YELLOW",
+            "SOLID"),
+            -500, 1500);
 
     public static CashBlockConfiguration getConfiguration() {
         return configuration;
@@ -71,17 +75,23 @@ public class CashBlockConfiguration extends OkaeriConfig {
     }
 
     public class Airdrop extends OkaeriConfig {
-        @Comment("Co ile ma pierdolnac airdrop (w tickach 1 tick = 20 sekund)")
+        @Comment("Co ile ma pierdolnac airdrop (w sekundach)")
         public long time;
         @Comment("Wiadomosc o airdropach")
         public String message;
         @Comment("Wiadomosc wysylana do gracza jak wykopie airdropa")
         public String messageReceive;
+        @CustomKey("bossbar")
+        public Bossbar airdropBossbar;
+        public int min, max;
 
-        public Airdrop(long time, String message, String messageReceive) {
+        public Airdrop(long time, String message, String messageReceive, Bossbar airdropBossbar, int min, int max) {
             this.time = time;
             this.message = message;
             this.messageReceive = messageReceive;
+            this.airdropBossbar = airdropBossbar;
+            this.min = min;
+            this.max = max;
         }
 
         public String getFormattedMessage(int coordX, int coordZ) {
@@ -90,7 +100,7 @@ public class CashBlockConfiguration extends OkaeriConfig {
         }
 
         public String getFormattedReceiveMessage(double amount) {
-            return ChatUtil.fixColor(message.replace("{PITOS}", Double.toString(amount)));
+            return ChatUtil.fixColor(messageReceive.replace("{PITOS}", Double.toString(amount)));
         }
     }
 
