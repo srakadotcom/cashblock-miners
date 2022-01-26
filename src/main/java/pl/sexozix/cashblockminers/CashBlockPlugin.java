@@ -11,8 +11,7 @@ import org.bukkit.World;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import pl.memexurer.srakadb.sql.DatabaseManager;
-import pl.memexurer.srakadb.sql.DatabaseTransactionError;
+import pl.memexurer.srakadb.sql.table.transaction.DatabaseTransactionError;
 import pl.sexozix.cashblockminers.commands.*;
 import pl.sexozix.cashblockminers.listener.AirdropListener;
 import pl.sexozix.cashblockminers.listener.InventoryListener;
@@ -24,7 +23,6 @@ import pl.sexozix.cashblockminers.system.data.UserRepository;
 import pl.sexozix.cashblockminers.system.reward.RewardSerializer;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -74,23 +72,13 @@ public final class CashBlockPlugin extends JavaPlugin {
 
             dataSource = new HikariDataSource(config);
             getServer().getServicesManager().register(HikariDataSource.class, dataSource, this, ServicePriority.Normal);
+            repository.initialize(dataSource);
         } catch (DatabaseTransactionError error) {
             error.printStackTrace();
             getLogger().severe("Nie udalo sie polaczyc z baza danych. Wylaczanie pluginu...");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-
-        try {
-            DatabaseManager databaseManager = new DatabaseManager(dataSource.getConnection());
-            repository.initialize(databaseManager);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            getLogger().severe("Wystapil blad podczas wlaczania DatabaseManagera; wylaczanie pluginu");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
         getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             try {
                 repository.save();

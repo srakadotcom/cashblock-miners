@@ -1,77 +1,56 @@
 package pl.sexozix.cashblockminers.system.data;
 
-import java.util.*;
+import com.zaxxer.hikari.HikariDataSource;
+import pl.memexurer.srakadb.sql.table.DatabaseTable;
+import pl.memexurer.srakadb.sql.table.query.DatabaseBulkInsertQuery;
+import pl.memexurer.srakadb.sql.table.transaction.DatabaseTransactionError;
 
-import pl.memexurer.srakadb.sql.*;
-import pl.sexozix.cashblockminers.system.data.UserDataModel.Deserializer;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserRepository {
 
-  private final Map<UUID, UserDataModel> dataModelMap = new HashMap<>();
-  private final DatabaseTable<UserDataModel> databaseTable = new DatabaseTable.Builder<>(
-      "cashblock_players", new Deserializer())
-      .addPrimaryColumn("PlayerUniqueId", DatabaseDatatype.varCharacter(36))
-      .addColumn("PlayerName", DatabaseDatatype.varCharacter(16))
-      .addColumn("PlayerMoney", DatabaseDatatype.decimal(15, 2))
-      .addColumn("BoostExpire", DatabaseDatatype.integer(8))
-      .addColumn("BoostStart", DatabaseDatatype.integer(8))
-      .build();
+    private final Map<UUID, UserDataModel> dataModelMap = new HashMap<>();
+    private DatabaseTable<UserDataModel> databaseTable;
 
-  public void initialize(DatabaseManager manager) {
-    manager.createTable(databaseTable);
-    try (DatabaseQueryTransaction<UserDataModel> transaction = databaseTable
-        .createQueryAllRowsTransaction()) {
-      UserDataModel dataModel;
-      while ((dataModel = transaction.readNextResult()) != null) {
-        dataModelMap.put(dataModel.uuid(), dataModel);
-      }
-    }
-  }
-
-  public void save() throws DatabaseTransactionError {
-    Collection<UserDataModel> dataModelList = new ArrayList<>(dataModelMap.values());
-
-    try(DatabasePreparedTransaction transaction = databaseTable.createUpdateAllColumnsTransaction()) {
-      transaction.setBatch();
-
-      for(UserDataModel dataModel: dataModelList) {
-        if(!dataModel.update()) continue;
-
-          transaction.set("PlayerUniqueId", dataModel.uuid().toString());
-          transaction.set("PlayerName", dataModel.name());
-          transaction.set("PlayerMoney", dataModel.money());
-          transaction.set("BoostExpire", dataModel.boostExpire());
-          transaction.set("BoostStart", dataModel.boostStart());
-          transaction.addBatch();
-      }
-    }
-  }
-
-  public List<UserDataModel> createTops() {
-    List<UserDataModel> dataModelList = new ArrayList<>(dataModelMap.values());
-    dataModelList.sort(Comparator.comparingDouble(UserDataModel::money).reversed());
-    return dataModelList;
-  }
-
-  public UserDataModel getOrCreateUser(String name, UUID uuid) {
-    UserDataModel dataModel = dataModelMap.get(uuid);
-    if(dataModel == null) {
-      dataModelMap.put(uuid, dataModel = new UserDataModel(uuid, name, 0, 0, 0));
+    public void initialize(HikariDataSource source) throws DatabaseTransactionError{
+        this.databaseTable = new DatabaseTable<>("cashblock_players", source, UserDataModel.class);
+        this.databaseTable.initializeTable();
     }
 
-    return dataModel;
-  }
+    public void save() throws DatabaseTransactionError {
+        new DatabaseBulkInsertQuery(DatabaseBulkInsertQuery.UpdateType.REPLACE)
+                    .values(dataModelMap.values().stream()
+                            .map(databaseTable.getModelMapper()::createQueryPairs)
+                            .collect(Collectors.toList()))
+                    .execute(databaseTable);
+    }
 
-  public UserDataModel getExistingUser(UUID uuid) {
-    return dataModelMap.get(uuid);
-  }
+    public List<UserDataModel> createTops() {
+        List<UserDataModel> dataModelList = new ArrayList<>(dataModelMap.values());
+        dataModelList.sort(Comparator.comparingDouble(UserDataModel::money).reversed());
+        return dataModelList;
+    }
 
-  public UserDataModel findUserByName(String name) {
-    for (UserDataModel dataModel : dataModelMap.values()) {
-      if (dataModel.name().equals(name)) {
+    public UserDataModel getOrCreateUser(String name, UUID uuid) {
+        UserDataModel dataModel = dataModelMap.get(uuid);
+        if (dataModel == null) {
+            dataModelMap.put(uuid, dataModel = new UserDataModel(uuid, name, 0, 0, 0));
+        }
+
         return dataModel;
-      }
     }
-    return null;
-  }
+
+    public UserDataModel getExistingUser(UUID uuid) {
+        return dataModelMap.get(uuid);
+    }
+
+    public UserDataModel findUserByName(String name) {
+        for (UserDataModel dataModel : dataModelMap.values()) {
+            if (dataModel.name().equals(name)) {
+                return dataModel;
+            }
+        }
+        return null;
+    }
 }

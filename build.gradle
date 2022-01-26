@@ -42,22 +42,33 @@ repositories {
         url = 'https://oss.sonatype.org/content/repositories/snapshots/'
     }
 
-    repositories {
-        maven {
-            url "https://repo.dmulloy2.net/repository/public/"
+    maven {
+        url "https://repo.dmulloy2.net/repository/public/"
+        content {
+            includeGroup 'com.comphenix.protocol'
+        }
+    }
+
+    maven {
+        url = uri("https://maven.pkg.github.com/playcastle-ru/database-sraka")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+        content {
+            includeGroup 'pl.memexurer'
         }
     }
 }
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
-    implementation files("libs/database.jar")
+    implementation 'pl.memexurer:database-sraka:2.3.3-SNAPSHOT'
 
     compileOnly 'me.clip:placeholderapi:2.10.1'
 
     implementation 'eu.okaeri:okaeri-configs-yaml-bukkit:2.7.32'
 
-    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.0'
 
     compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4+"

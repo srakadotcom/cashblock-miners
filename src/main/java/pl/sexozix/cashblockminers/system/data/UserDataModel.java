@@ -1,18 +1,23 @@
 package pl.sexozix.cashblockminers.system.data;
 
-import org.bukkit.Bukkit;
-import pl.memexurer.srakadb.sql.ResultSetDeserializer;
+import pl.memexurer.srakadb.sql.mapper.SerializableTableColumn;
+import pl.memexurer.srakadb.sql.mapper.TableColumnInfo;
+import pl.memexurer.srakadb.sql.mapper.TypedTableColumn;
+import pl.memexurer.srakadb.sql.mapper.serializer.UuidValueDeserializer;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.UUID;
 
 public final class UserDataModel {
+    @TableColumnInfo(name = "PlayerUniqueId", serialized = @SerializableTableColumn(UuidValueDeserializer.class))
     private final UUID uuid;
+    @TableColumnInfo(name = "PlayerName", typed = @TypedTableColumn("varchar(16)"))
     private final String name;
+    @TableColumnInfo(name = "PlayerMoney", typed = @TypedTableColumn("decimal(15,2)"))
     private double money;
     private boolean update;
+    @TableColumnInfo(name = "BoostExpire", typed = @TypedTableColumn("integer(8)"))
     private long boostExpire;
+    @TableColumnInfo(name = "BoostStart", typed = @TypedTableColumn("integer(8)"))
     private long boostStart;
 
     private double fakeReward;
@@ -77,7 +82,7 @@ public final class UserDataModel {
     }
 
     public double fakeReward() {
-        if(fakeReward > 0.0d) {
+        if (fakeReward > 0.0d) {
             double reward = fakeReward;
             fakeReward = 0;
             return reward;
@@ -91,7 +96,7 @@ public final class UserDataModel {
     }
 
     public boolean update() {
-        if(update) {
+        if (update) {
             update = false;
             return true;
         }
@@ -101,19 +106,5 @@ public final class UserDataModel {
     public void takeMoney(double reward) {
         this.money -= reward;
         this.update = true;
-    }
-
-    static class Deserializer implements
-            ResultSetDeserializer<UserDataModel> {
-
-        @Override
-        public UserDataModel deserialize(ResultSet resultSet) throws SQLException {
-            return new UserDataModel(
-                    UUID.fromString(resultSet.getString("PlayerUniqueId")),
-                    resultSet.getString("PlayerName"),
-                    resultSet.getDouble("PlayerMoney"),
-                    resultSet.getLong("BoostExpire"),
-                    resultSet.getLong("BoostStart"));
-        }
     }
 }
