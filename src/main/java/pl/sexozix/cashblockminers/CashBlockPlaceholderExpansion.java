@@ -33,7 +33,8 @@ public final class CashBlockPlaceholderExpansion extends PlaceholderExpansion {
     public String onRequest(OfflinePlayer player, String params) {
         UserDataModel dataModel = handler.getCachedDataModel(player.getUniqueId());
         if(params.equals("moneyint")) {
-            return String.valueOf((int) dataModel.money());
+            if(dataModel == null) return "0";
+            else return String.valueOf((int) dataModel.money());
         } else if(params.equals("moneyfloat")) {
             if (dataModel == null)
                 return "0.0";
