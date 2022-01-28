@@ -75,6 +75,7 @@ dependencies {
 }
 
 shadowJar {
+    relocate 'pl.memexurer.srakadb.sql', 'pl.sexozix.cashblockminers.srakadb'
     relocate 'eu.okaeri', 'pl.sexozix.cashblockminers.okaeri'
     relocate 'net.kyori', 'pl.sexozix.cashblockminers.kyori'
     exclude "database.properties"
