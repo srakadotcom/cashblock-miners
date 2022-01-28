@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
 import java.util.concurrent.TimeUnit;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,7 +23,6 @@ import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.system.data.UserRepository;
 import pl.sexozix.cashblockminers.system.reward.RewardSerializer;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,8 +37,17 @@ public final class CashBlockPlugin extends JavaPlugin {
     private UserRepository repository;
     private final Set<Location> airdrops = new HashSet<>();
     private long nextAirdropTime;
+    private BukkitAudiences adventure;
 
-    @Override
+    public BukkitAudiences adventure() {
+      if (adventure == null) {
+        throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+      }
+      return adventure;
+    }
+
+
+  @Override
     public void onEnable() {
         CashBlockConfiguration.setConfiguration(ConfigManager.create(CashBlockConfiguration.class, (it) -> {
             it.withConfigurer(new YamlBukkitConfigurer());
@@ -47,6 +56,8 @@ public final class CashBlockPlugin extends JavaPlugin {
             it.saveDefaults();
             it.load(true); // XDDDDDDDDDd
         }));
+
+        adventure = BukkitAudiences.create(this);
 
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
@@ -141,8 +152,8 @@ public final class CashBlockPlugin extends JavaPlugin {
                     System.currentTimeMillis()
                         + (CashBlockConfiguration.getConfiguration().airdrop.time * 1000);
               },
-              TimeUnit.MINUTES.toMillis(5L),
-              20L);
+              0L,
+              TimeUnit.MINUTES.toMillis(5L));
         }
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
@@ -173,6 +184,10 @@ public final class CashBlockPlugin extends JavaPlugin {
             if (!isDataSourceStolen)
                 dataSource.close();
         }
+      if(adventure != null) {
+        adventure.close();
+        adventure = null;
+      }
     }
 
     public UserHandler getHandler() {
@@ -183,7 +198,7 @@ public final class CashBlockPlugin extends JavaPlugin {
         return JavaPlugin.getPlugin(CashBlockPlugin.class);
     }
 
-    public long getNextAirdropTime() {
+  public long getNextAirdropTime() {
         return nextAirdropTime;
     }
 }
