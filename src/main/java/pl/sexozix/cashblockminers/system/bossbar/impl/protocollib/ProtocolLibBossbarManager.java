@@ -32,11 +32,14 @@ public class ProtocolLibBossbarManager implements BossBarManager {
             return;
 
         for (Player player : Bukkit.getOnlinePlayers()) {
+            Audience audience = plugin.adventure().player(player);
             if(!userHandler.getCachedDataModel(player.getUniqueId()).isBoostActive() || getBossbar() == null)
-            bossbarText = ChatUtil.fixColor(CashBlockConfiguration.getConfiguration().bossbar.bossbarMoneyDisplayMessage
-                .replace("{PLAYER}", playerName)
-                .replace("{MONEY}", Double.toString(amountMined)));
+                bossbarText = ChatUtil.fixColor(CashBlockConfiguration.getConfiguration().bossbar.bossbarMoneyDisplayMessage
+                    .replace("{PLAYER}", playerName)
+                    .replace("{MONEY}", Double.toString(amountMined)));
             bossBar.name(Component.text(bossbarText));
+            bossBar.progress(1);
+            audience.showBossBar(bossBar);
         }
 
         notificationExpiration = System.currentTimeMillis() + BOSSBAR_SHOW_TIME;
@@ -45,8 +48,6 @@ public class ProtocolLibBossbarManager implements BossBarManager {
     @Override
     public void doTick() {
         long time = notificationExpiration - System.currentTimeMillis();
-        long airdropTime = plugin.getNextAirdropTime() - System.currentTimeMillis();
-        long airdropDisplayAt = (CashBlockConfiguration.getConfiguration().airdrop.time * 200);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             UserDataModel dataModel = userHandler.getCachedDataModel(player.getUniqueId());
@@ -57,10 +58,6 @@ public class ProtocolLibBossbarManager implements BossBarManager {
             long boostExpireTime = dataModel.boostExpire() - System.currentTimeMillis();
             if (dataModel.isBoostActive() && getBossbar() != null) {
                 bossBar.name(Component.text(ChatUtil.fixColor(getBossbar().bossbarMoneyDisplayMessage.replace("{TIME}", ChatUtil.getDurationBreakdown(boostExpireTime)))));
-                bossBar.progress(1);
-                audience.showBossBar(bossBar);
-            } else if(airdropTime < airdropDisplayAt) {
-                bossBar.name(Component.text(ChatUtil.fixColor(CashBlockConfiguration.getConfiguration().airdrop.airdropBossbar.bossbarMoneyDisplayMessage.replace("{TIME}", ChatUtil.getDurationBreakdown(airdropTime)))));
                 bossBar.progress(1);
                 audience.showBossBar(bossBar);
             } else {
