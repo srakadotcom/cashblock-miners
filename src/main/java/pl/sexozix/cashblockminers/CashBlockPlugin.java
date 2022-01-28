@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,13 +48,12 @@ public final class CashBlockPlugin extends JavaPlugin {
             it.load(true); // XDDDDDDDDDd
         }));
 
-        this.repository = new UserRepository();
-
         RegisteredServiceProvider<HikariDataSource> dataSourceProvider = getServer().getServicesManager().getRegistration(HikariDataSource.class);
         if (dataSourceProvider != null) {
             dataSource = dataSourceProvider.getProvider();
             isDataSourceStolen = true;
             getLogger().info("Uzyto gotowego polaczenia z baza danych od pluginu " + dataSourceProvider.getPlugin().getName());
+            this.repository = new UserRepository(dataSource);
         } else try {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(CashBlockConfiguration.getConfiguration().database.databaseUrl);
@@ -72,7 +72,7 @@ public final class CashBlockPlugin extends JavaPlugin {
 
             dataSource = new HikariDataSource(config);
             getServer().getServicesManager().register(HikariDataSource.class, dataSource, this, ServicePriority.Normal);
-            repository.initialize(dataSource);
+            this.repository = new UserRepository(dataSource);
         } catch (DatabaseTransactionError error) {
             error.printStackTrace();
             getLogger().severe("Nie udalo sie polaczyc z baza danych. Wylaczanie pluginu...");
@@ -105,29 +105,44 @@ public final class CashBlockPlugin extends JavaPlugin {
 
         if (CashBlockConfiguration.getConfiguration().airdrop != null) {
             getServer().getPluginManager().registerEvents(new AirdropListener(airdrops, handler), this);
-            getServer().getScheduler().runTaskTimer(this, () -> {
-                if(System.currentTimeMillis() <= nextAirdropTime)
-                    return;
+      getServer()
+          .getScheduler()
+          .runTaskTimer(
+              this,
+              () -> {
+                if (System.currentTimeMillis() <= nextAirdropTime) return;
 
                 World world = this.getServer().getWorlds().get(0);
 
-                int x = ThreadLocalRandom.current().nextInt(CashBlockConfiguration.getConfiguration().airdrop.min, CashBlockConfiguration.getConfiguration().airdrop.max);
-                int z = ThreadLocalRandom.current().nextInt(CashBlockConfiguration.getConfiguration().airdrop.min, CashBlockConfiguration.getConfiguration().airdrop.max);
+                int x =
+                    ThreadLocalRandom.current()
+                        .nextInt(
+                            CashBlockConfiguration.getConfiguration().airdrop.min,
+                            CashBlockConfiguration.getConfiguration().airdrop.max);
+                int z =
+                    ThreadLocalRandom.current()
+                        .nextInt(
+                            CashBlockConfiguration.getConfiguration().airdrop.min,
+                            CashBlockConfiguration.getConfiguration().airdrop.max);
                 double y = world.getHighestBlockYAt(x, z);
                 Location location = new Location(world, x, y, z);
 
                 int random = ThreadLocalRandom.current().nextInt(3);
-                if(random == 0)
-                    world.getBlockAt(location).setType(Material.IRON_BLOCK);
-                else if(random == 1) {
-                    world.getBlockAt(location).setType(Material.GOLD_BLOCK);
+                if (random == 0) world.getBlockAt(location).setType(Material.IRON_BLOCK);
+                else if (random == 1) {
+                  world.getBlockAt(location).setType(Material.GOLD_BLOCK);
                 } else {
-                    world.getBlockAt(location).setType(Material.DIAMOND_BLOCK);
+                  world.getBlockAt(location).setType(Material.DIAMOND_BLOCK);
                 }
-                Bukkit.broadcastMessage(CashBlockConfiguration.getConfiguration().airdrop.getFormattedMessage(x, z));
+                Bukkit.broadcastMessage(
+                    CashBlockConfiguration.getConfiguration().airdrop.getFormattedMessage(x, z));
                 airdrops.add(location);
-                nextAirdropTime = System.currentTimeMillis() + (CashBlockConfiguration.getConfiguration().airdrop.time * 1000);
-            }, 20L, 20L);
+                nextAirdropTime =
+                    System.currentTimeMillis()
+                        + (CashBlockConfiguration.getConfiguration().airdrop.time * 1000);
+              },
+              TimeUnit.MINUTES.toMillis(5L),
+              20L);
         }
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
@@ -140,6 +155,7 @@ public final class CashBlockPlugin extends JavaPlugin {
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CashBlockPlaceholderExpansion(handler).register();
+            getLogger().warning("dupa dupy");
         } else {
             getLogger().warning("Nie znaleziono pluginu PlaceholderAPI! Nie bedziesz mogl uzyc danych z tego pluginu w innych pluginach xd.");
         }

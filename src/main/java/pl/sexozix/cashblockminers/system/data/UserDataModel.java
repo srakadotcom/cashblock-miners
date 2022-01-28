@@ -8,7 +8,7 @@ import pl.memexurer.srakadb.sql.mapper.serializer.UuidValueDeserializer;
 import java.util.UUID;
 
 public final class UserDataModel {
-    @TableColumnInfo(name = "PlayerUniqueId", serialized = @SerializableTableColumn(UuidValueDeserializer.class))
+    @TableColumnInfo(primary = true, name = "PlayerUniqueId", serialized = @SerializableTableColumn(UuidValueDeserializer.class))
     private final UUID uuid;
     @TableColumnInfo(name = "PlayerName", typed = @TypedTableColumn("varchar(16)"))
     private final String name;

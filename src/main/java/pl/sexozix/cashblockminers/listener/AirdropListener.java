@@ -34,7 +34,7 @@ public class AirdropListener implements Listener {
     }
 
     private double getDupa() {
-        return BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(5))
+        return BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(3))
                 .setScale(1, RoundingMode.HALF_DOWN)
                 .doubleValue();
     }

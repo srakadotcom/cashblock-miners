@@ -1,20 +1,25 @@
 package pl.sexozix.cashblockminers.system.data;
 
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.bukkit.plugin.Plugin;
 import pl.memexurer.srakadb.sql.table.DatabaseTable;
 import pl.memexurer.srakadb.sql.table.query.DatabaseBulkInsertQuery;
 import pl.memexurer.srakadb.sql.table.transaction.DatabaseTransactionError;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 public class UserRepository {
 
     private final Map<UUID, UserDataModel> dataModelMap = new HashMap<>();
-    private DatabaseTable<UserDataModel> databaseTable;
+    private final DatabaseTable<UserDataModel> databaseTable;
 
-    public void initialize(HikariDataSource source) throws DatabaseTransactionError{
-        this.databaseTable = new DatabaseTable<>("cashblock_players", source, UserDataModel.class);
+
+    public UserRepository(HikariDataSource dataSource) {
+        this.databaseTable = new DatabaseTable<>("cashblock_players", dataSource, UserDataModel.class);
         this.databaseTable.initializeTable();
     }
 
@@ -22,7 +27,7 @@ public class UserRepository {
         new DatabaseBulkInsertQuery(DatabaseBulkInsertQuery.UpdateType.REPLACE)
                     .values(dataModelMap.values().stream()
                             .map(databaseTable.getModelMapper()::createQueryPairs)
-                            .collect(Collectors.toList()))
+                            .toList())
                     .execute(databaseTable);
     }
 
