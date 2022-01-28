@@ -152,8 +152,8 @@ public final class CashBlockPlugin extends JavaPlugin {
                     System.currentTimeMillis()
                         + (CashBlockConfiguration.getConfiguration().airdrop.time * 1000);
               },
-              0L,
-              TimeUnit.MINUTES.toMillis(5L));
+              TimeUnit.MINUTES.toMillis(5L),
+              20L);
         }
 
         getCommand("money").setExecutor(new MoneyCommand(handler));

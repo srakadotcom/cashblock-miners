@@ -61,6 +61,8 @@ repositories {
     }
 }
 
+compileJava.options.encoding = 'UTF-8'
+
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
     implementation 'pl.memexurer:database-sraka:2.3.3-SNAPSHOT'
