@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.plugin.Plugin;
 import pl.memexurer.srakadb.sql.table.DatabaseTable;
 import pl.memexurer.srakadb.sql.table.query.DatabaseBulkInsertQuery;
 import pl.memexurer.srakadb.sql.table.transaction.DatabaseTransactionError;

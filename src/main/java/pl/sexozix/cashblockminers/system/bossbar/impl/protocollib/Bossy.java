@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Bossy {
+public class Bossy implements Listener {
     private static int CUSTOM_ID;
 
     static {
@@ -53,36 +54,6 @@ public class Bossy {
         }.runTaskTimer(plugin, 0, frequency);
     }
 
-    private static BlockFace getDirection(Location loc) {
-        float dir = Math.round(loc.getYaw() / 90);
-        if (dir == -4 || dir == 0 || dir == 4)
-            return BlockFace.SOUTH;
-        if (dir == -1 || dir == 3)
-            return BlockFace.EAST;
-        if (dir == -2 || dir == 2)
-            return BlockFace.NORTH;
-        if (dir == -3 || dir == 1)
-            return BlockFace.WEST;
-        throw new IllegalArgumentException("Twoja stara");
-    }
-
-    /**
-     * Reveal the boss bar to a player. Also creates a boss bar
-     * for the player if it didn't exist.
-     *
-     * @param player
-     */
-    public void show(Player player) {
-        BossBar bar = getBossBar(player);
-
-        if (bar == null)
-            bar = newBossBar(player, "null", 1);
-
-        if (bar.isSpawned())
-            despawn(bar);
-        spawn(bar, getDistantLocation(player));
-    }
-
     /**
      * Hides the boss bar from a player.
      *
@@ -110,29 +81,11 @@ public class Bossy {
             bar.setText(text);
 
         if (bar.isSpawned())
-            despawn(bar);
-        spawn(bar, getDistantLocation(player));
-    }
-
-    /**
-     * Sets the percent of the boss bar for a player. Also
-     * creates the boss bazr if it didn't exist.
-     *
-     * @param player
-     * @param percent A value in the range [0,1]
-     */
-    public void setPercent(Player player, float percent) {
-        BossBar bar = getBossBar(player);
-
-        if (bar == null)
-            bar = newBossBar(player, "null", (300 * percent));
+            update(bar);
         else
-            bar.setHealth((300 * percent));
-
-        if (bar.isSpawned())
-            despawn(bar);
-        spawn(bar, getDistantLocation(player));
+            spawn(bar, getDistantLocation(player));
     }
+
 
     /**
      * Sets the text and percent of the boss bar for a player.
@@ -153,8 +106,9 @@ public class Bossy {
         }
 
         if (bar.isSpawned())
-            despawn(bar);
-        spawn(bar, getDistantLocation(player));
+            update(bar);
+        else
+            spawn(bar, getDistantLocation(player));
     }
 
     private void teleport(BossBar bar, Location location) {
@@ -203,6 +157,18 @@ public class Bossy {
         spawnPacketModifier.write(2, location.getBlockX() * 32);
         spawnPacketModifier.write(3, location.getBlockY() * 32);
         spawnPacketModifier.write(4, location.getBlockZ() * 32);
+        spawnPacket.getDataWatcherModifier().write(0, bar.getDataWatcher());
+
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bar.getPlayer(), spawnPacket, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void update(BossBar bar) {
+        PacketContainer spawnPacket = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
+        spawnPacket.getIntegerArrays().write(0, new int[]{CUSTOM_ID});
         spawnPacket.getDataWatcherModifier().write(0, bar.getDataWatcher());
 
         try {
@@ -272,6 +238,7 @@ public class Bossy {
             WrappedDataWatcher watcher = new WrappedDataWatcher();
             watcher.setObject(0, (byte) 32);
             watcher.setObject(2, this.text);
+            watcher.setObject(4, (byte) 1);
             watcher.setObject(6, this.health, true); // Set health
             watcher.setObject(10, this.text);
             watcher.setObject(20, 881);

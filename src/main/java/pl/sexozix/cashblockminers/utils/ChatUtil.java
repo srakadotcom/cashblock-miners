@@ -133,7 +133,7 @@ public final class ChatUtil {
         }
 
         if(sb.isEmpty()) {
-            sb.append("Już się zrespił"); //to jest do airdropa wypierdalj lol
+            sb.append(":(");
         }
 
         return (sb.toString());

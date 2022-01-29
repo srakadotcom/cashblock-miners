@@ -74,7 +74,6 @@ dependencies {
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.0'
 
     compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4+"
-    implementation "net.kyori:adventure-platform-bukkit:4.0.1"
 }
 
 shadowJar {
