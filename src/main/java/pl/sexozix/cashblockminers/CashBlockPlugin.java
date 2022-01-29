@@ -17,7 +17,6 @@ import pl.sexozix.cashblockminers.commands.*;
 import pl.sexozix.cashblockminers.listener.AirdropListener;
 import pl.sexozix.cashblockminers.listener.InventoryListener;
 import pl.sexozix.cashblockminers.listener.PlayerBlockBreakListener;
-import pl.sexozix.cashblockminers.system.AirDropTask;
 import pl.sexozix.cashblockminers.system.blockreward.BlockRewardManager;
 import pl.sexozix.cashblockminers.system.bossbar.BossBarManager;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
@@ -145,8 +144,6 @@ public final class CashBlockPlugin extends JavaPlugin {
               TimeUnit.MINUTES.toMillis(5L),
               20L);
         }
-
-        new AirDropTask(this).runTaskTimerAsynchronously(this, 0L, 20L);
 
         getCommand("money").setExecutor(new MoneyCommand(handler));
         getCommand("wygrana").setExecutor(new FakeRewardCommand(handler));

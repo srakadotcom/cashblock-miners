@@ -60,7 +60,11 @@ public class CashBlockConfiguration extends OkaeriConfig {
             """, """
             &7GRATULACJE KURWIU
             &7WYKOPALES &6{PITOS} PITOSU
-            """, "&8>> &7Airdrop pojawi się za: &6{TIME} &8<<", -500, 1500);
+            """, new Bossbar(
+            "&8>> &7Airdrop za: &6{TIME} &8<<",
+            "YELLOW",
+            "SOLID"),
+            -500, 1500);
 
     public static CashBlockConfiguration getConfiguration() {
         return configuration;
@@ -77,16 +81,15 @@ public class CashBlockConfiguration extends OkaeriConfig {
         public String message;
         @Comment("Wiadomosc wysylana do gracza jak wykopie airdropa")
         public String messageReceive;
-        @CustomKey("actionbar")
-        public String actionbarMessage;
-        public int min;
-        public int max;
+        @CustomKey("bossbar")
+        public Bossbar airdropBossbar;
+        public int min, max;
 
-        public Airdrop(long time, String message, String messageReceive, String actionbarMessage, int min, int max) {
+        public Airdrop(long time, String message, String messageReceive, Bossbar airdropBossbar, int min, int max) {
             this.time = time;
             this.message = message;
             this.messageReceive = messageReceive;
-            this.actionbarMessage = actionbarMessage;
+            this.airdropBossbar = airdropBossbar;
             this.min = min;
             this.max = max;
         }
