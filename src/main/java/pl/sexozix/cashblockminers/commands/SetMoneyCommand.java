@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import pl.sexozix.cashblockminers.system.data.UserDataModel;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
 import pl.sexozix.cashblockminers.utils.ChatUtil;
 
@@ -29,9 +30,17 @@ public class SetMoneyCommand implements CommandExecutor {
       ChatUtil.sendMessage(player, "&8>> &7Ustawiłeś sobie kaske na " + args[0]);
       return false;
     }
-    var otherDataModel = userHandler.findUserByName(args[1]);
-    otherDataModel.setMoney(Double.parseDouble(args[0]));
-    ChatUtil.sendMessage(player, "&7Ustawiłeś graczowi " + args[1] + " kase na " +  args[0]);
-    return false;
+
+    {
+      UserDataModel otherDataModel = userHandler.findOnlineUserByName(args[0]);;
+      if (otherDataModel == null) {
+        ChatUtil.sendMessage(player, "&7Nie znaleziono gracza!");
+        return false;
+      }
+
+      otherDataModel.setMoney(Double.parseDouble(args[0]));
+      ChatUtil.sendMessage(player, "&7Ustawiłeś graczowi " + args[1] + " kase na " + args[0]);
+      return false;
+    }
   }
 }

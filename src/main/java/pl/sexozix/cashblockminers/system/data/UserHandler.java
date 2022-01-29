@@ -1,5 +1,6 @@
 package pl.sexozix.cashblockminers.system.data;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class UserHandler {
         List<UserDataModel> tops = null;
 
         CompletableFuture<List<UserDataModel>> completableFuture = fetchTops();
-        if(completableFuture.isDone()) {
+        if (completableFuture.isDone()) {
             try {
                 tops = completableFuture.get();
             } catch (InterruptedException | ExecutionException e) {
@@ -56,5 +57,13 @@ public class UserHandler {
 
     public UserDataModel findUserByName(String name) {
         return repository.findUserByName(name);
+    }
+
+    public UserDataModel findOnlineUserByName(String name) {
+        Player player = Bukkit.getPlayer(name);
+        if (player != null)
+            return getUserDataModel(player);
+        else
+            return repository.findUserByName(name);
     }
 }

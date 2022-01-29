@@ -2,6 +2,8 @@ package pl.sexozix.cashblockminers.commands;
 
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -69,7 +71,7 @@ public class PlayerBoostCommand implements CommandExecutor {
       return true;
     }
 
-    UserDataModel model = userHandler.findUserByName(args[0]);
+    UserDataModel model = userHandler.findOnlineUserByName(args[0]);;
     if (model == null) {
       sender.sendMessage(ChatColor.RED + "Nie znaleziono gracza!");
       return true;

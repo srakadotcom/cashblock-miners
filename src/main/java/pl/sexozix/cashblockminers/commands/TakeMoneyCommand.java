@@ -1,11 +1,14 @@
 package pl.sexozix.cashblockminers.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import pl.sexozix.cashblockminers.system.data.UserDataModel;
 import pl.sexozix.cashblockminers.system.data.UserHandler;
+import pl.sexozix.cashblockminers.utils.ChatUtil;
 
 public class TakeMoneyCommand implements CommandExecutor {
     private final UserHandler handler;
@@ -36,10 +39,10 @@ public class TakeMoneyCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + "Nieprawidlowa liczba!");
         }
 
-        UserDataModel dataModel = handler.findUserByName(args[0]);
+        UserDataModel dataModel = handler.findOnlineUserByName(args[0]);
         if (dataModel == null) {
-            sender.sendMessage(ChatColor.RED + "Nie znaleziono gracza o takim nicku!");
-            return true;
+            ChatUtil.sendMessage(sender, "&7Nie znaleziono gracza!");
+            return false;
         }
 
         dataModel.takeMoney(reward);

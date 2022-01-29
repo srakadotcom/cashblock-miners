@@ -35,7 +35,7 @@ public class MoneyCommand implements CommandExecutor
             if(args.length != 1) {
                 sender.sendMessage(ChatColor.RED + "Poprawne uzycie: /" + label + " (nick)");
             } else {
-                UserDataModel dataModel = userHandler.findUserByName(args[0]);
+                UserDataModel dataModel = userHandler.findOnlineUserByName(args[0]);
                 if (dataModel == null) {
                     sender.sendMessage(ChatColor.RED + "Nie znaleziono gracza o takim nicku!");
                     return true;

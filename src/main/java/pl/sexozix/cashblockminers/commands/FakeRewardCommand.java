@@ -1,6 +1,5 @@
 package pl.sexozix.cashblockminers.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,16 +30,15 @@ public class FakeRewardCommand implements CommandExecutor {
         try {
             reward = Double.parseDouble(args[1]);
 
-            if(!Double.isFinite(reward))
+            if (!Double.isFinite(reward))
                 throw new NumberFormatException();
         } catch (NumberFormatException exception) {
             sender.sendMessage(ChatColor.RED + "Nieprawidlowa liczba!");
         }
 
-        UserDataModel dataModel = handler.findUserByName(args[0]);
+        UserDataModel dataModel = handler.findOnlineUserByName(args[0]);
         if (dataModel == null) {
-            sender.sendMessage(ChatColor.RED + "Nie znaleziono gracza o takim nicku!");
-            return true;
+            sender.sendMessage(ChatColor.RED + "Nie znaleziono gracza!");
         }
 
         dataModel.setFakeReward(reward);
